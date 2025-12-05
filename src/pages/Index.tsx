@@ -1,100 +1,111 @@
-import { CurrencyTable } from '@/components/CurrencyTable';
-import { useCurrencyConversion } from '@/hooks/useCurrencyConversion';
-import { Euro, ArrowRightLeft } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { Button } from '@/components/ui/button';
+import { Download, FileSpreadsheet } from 'lucide-react';
 
 const Index = () => {
-  const {
-    rows,
-    updateRow,
-    addRow,
-    removeRow,
-    convertAll,
-    supportedCurrencies,
-  } = useCurrencyConversion();
+  const generateExcelTemplate = () => {
+    const workbook = XLSX.utils.book_new();
+
+    // Main data sheet
+    const mainData = [
+      ['Date', 'Currency Code', 'Amount', 'Exchange Rate to EUR', 'Converted EUR'],
+      ['2024-01-15', 'CAD', 100, '', '=IF(D2="","",C2/D2)'],
+      ['2024-01-16', 'USD', 250, '', '=IF(D3="","",C3/D3)'],
+      ['2024-01-17', 'GBP', 500, '', '=IF(D4="","",C4/D4)'],
+      ['', '', '', '', ''],
+      ['', '', '', 'Total EUR:', '=SUM(E2:E4)'],
+    ];
+    const mainSheet = XLSX.utils.aoa_to_sheet(mainData);
+    
+    // Set column widths
+    mainSheet['!cols'] = [
+      { wch: 12 }, // Date
+      { wch: 15 }, // Currency Code
+      { wch: 12 }, // Amount
+      { wch: 20 }, // Exchange Rate
+      { wch: 15 }, // Converted EUR
+    ];
+
+    // Exchange rates reference sheet
+    const ratesData = [
+      ['Currency', 'Rate to EUR (1 EUR = X Currency)', 'Rate from Currency to EUR'],
+      ['USD', 1.08, '=1/B2'],
+      ['CAD', 1.47, '=1/B3'],
+      ['GBP', 0.86, '=1/B4'],
+      ['JPY', 162.5, '=1/B5'],
+      ['CHF', 0.94, '=1/B6'],
+      ['AUD', 1.65, '=1/B7'],
+      ['', '', ''],
+      ['Note: Update rates in column B with current values.', '', ''],
+      ['Column C shows the rate to divide your amount by.', '', ''],
+    ];
+    const ratesSheet = XLSX.utils.aoa_to_sheet(ratesData);
+    ratesSheet['!cols'] = [
+      { wch: 15 },
+      { wch: 30 },
+      { wch: 25 },
+    ];
+
+    // Instructions sheet
+    const instructionsData = [
+      ['Currency to EUR Converter - Instructions'],
+      [''],
+      ['1. Go to the "Data" sheet'],
+      ['2. Enter your date in column A'],
+      ['3. Enter the currency code in column B (e.g., CAD, USD, GBP)'],
+      ['4. Enter the amount in column C'],
+      ['5. Enter the exchange rate in column D'],
+      ['   - Look up the rate from the "Exchange Rates" sheet (Column C)'],
+      ['   - Or use VLOOKUP: =VLOOKUP(B2,\'Exchange Rates\'!A:C,3,FALSE)'],
+      ['6. Column E will automatically calculate the EUR amount'],
+      [''],
+      ['Tip: Update the exchange rates in the "Exchange Rates" sheet'],
+      ['with current values from xe.com or your bank.'],
+    ];
+    const instructionsSheet = XLSX.utils.aoa_to_sheet(instructionsData);
+    instructionsSheet['!cols'] = [{ wch: 60 }];
+
+    // Add sheets to workbook
+    XLSX.utils.book_append_sheet(workbook, instructionsSheet, 'Instructions');
+    XLSX.utils.book_append_sheet(workbook, mainSheet, 'Data');
+    XLSX.utils.book_append_sheet(workbook, ratesSheet, 'Exchange Rates');
+
+    // Generate and download file
+    XLSX.writeFile(workbook, 'currency_converter_template.xlsx');
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container max-w-5xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Euro className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">Currency Converter</h1>
-              <p className="text-xs text-muted-foreground">Convert any currency to Euro</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container max-w-5xl mx-auto px-4 py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-medium mb-4">
-            <ArrowRightLeft className="w-3 h-3" />
-            Historical Exchange Rates
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Multi-Currency to Euro
-          </h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">
-            Enter a date, select a currency, and input an amount to see the converted value in Euros. 
-            Perfect for expense tracking and financial reporting.
+    <div className="min-h-screen bg-background flex items-center justify-center p-8">
+      <div className="max-w-xl w-full text-center space-y-8">
+        <div className="space-y-4">
+          <FileSpreadsheet className="w-20 h-20 mx-auto text-primary" />
+          <h1 className="text-3xl font-bold text-foreground">
+            Currency to EUR Converter
+          </h1>
+          <p className="text-muted-foreground">
+            Download an Excel template with formulas to convert any currency to EUR.
+            Simply enter your dates, currency codes, amounts, and exchange rates.
           </p>
         </div>
 
-        {/* Table */}
-        <CurrencyTable
-          rows={rows}
-          supportedCurrencies={supportedCurrencies}
-          onUpdateRow={updateRow}
-          onAddRow={addRow}
-          onRemoveRow={removeRow}
-          onConvertAll={convertAll}
-        />
+        <Button 
+          onClick={generateExcelTemplate} 
+          size="lg"
+          className="gap-2"
+        >
+          <Download className="w-5 h-5" />
+          Download Excel Template
+        </Button>
 
-        {/* Help Text */}
-        <div className="mt-8 p-6 rounded-xl bg-muted/50 border border-border">
-          <h3 className="font-semibold text-foreground mb-3">How to use</h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
-              <span>Select a <strong>date</strong> for the exchange rate you want to use</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
-              <span>Choose the <strong>currency code</strong> (e.g., CAD, USD, GBP)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-              <span>Enter the <strong>amount</strong> in the source currency</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">4</span>
-              <span>Click <strong>Convert All</strong> or the conversion happens automatically</span>
-            </li>
+        <div className="text-sm text-muted-foreground space-y-2 pt-4 border-t border-border">
+          <p className="font-medium">The template includes:</p>
+          <ul className="list-disc list-inside text-left space-y-1">
+            <li>Data sheet with conversion formulas</li>
+            <li>Exchange rates reference sheet</li>
+            <li>Step-by-step instructions</li>
           </ul>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-border mt-16 py-6">
-        <div className="container max-w-5xl mx-auto px-4 text-center text-xs text-muted-foreground">
-          Exchange rates provided by{' '}
-          <a 
-            href="https://www.frankfurter.app/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            Frankfurter API
-          </a>
-          {' '}• Data from European Central Bank
-        </div>
-      </footer>
+      </div>
     </div>
   );
 };
