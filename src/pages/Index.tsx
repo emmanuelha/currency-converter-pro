@@ -3,7 +3,23 @@ import { Copy, Check, FileSpreadsheet, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const APPS_SCRIPT_CODE = `function fetchExchangeRates() {
+const APPS_SCRIPT_CODE = `function setupSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Data');
+  
+  if (!sheet) {
+    sheet = ss.insertSheet('Data');
+  }
+  
+  const headers = ['Date', 'Currency Code', 'Amount', 'Exchange Rate (EUR)', 'Converted EUR'];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+  sheet.getRange('E2').setFormula('=IF(D2="","",C2*D2)');
+  
+  SpreadsheetApp.getUi().alert('Sheet setup complete! Add your data starting from row 2.');
+}
+
+function fetchExchangeRates() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Data');
   const lastRow = sheet.getLastRow();
   
@@ -35,6 +51,7 @@ const APPS_SCRIPT_CODE = `function fetchExchangeRates() {
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Currency Converter')
+    .addItem('Setup Sheet', 'setupSheet')
     .addItem('Fetch Exchange Rates', 'fetchExchangeRates')
     .addToUi();
 }`;
@@ -66,15 +83,8 @@ const Index = () => {
           <h3 className="font-semibold text-foreground">Step 1: Create Your Google Sheet</h3>
           <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
             <li>Go to <a href="https://sheets.google.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Sheets</a> and create a new spreadsheet</li>
-            <li>Rename the first sheet tab to <strong>"Data"</strong></li>
-            <li>Add these headers in row 1:</li>
+            <li>Add the Apps Script below (Step 2), then use <strong>Currency Converter → Setup Sheet</strong> to auto-create headers</li>
           </ol>
-          <div className="bg-muted p-3 rounded-lg text-sm font-mono mt-2">
-            A1: Date | B1: Currency Code | C1: Amount | D1: Exchange Rate (EUR) | E1: Converted EUR
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            In cell E2, enter this formula and drag down: <code className="bg-muted px-2 py-1 rounded">=IF(D2="","",C2*D2)</code>
-          </p>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6 space-y-4">
@@ -99,8 +109,9 @@ const Index = () => {
         <div className="rounded-xl border border-border bg-muted/50 p-6 space-y-3">
           <h3 className="font-semibold text-foreground">Step 3: Use the Converter</h3>
           <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-            <li>Enter your data in the Data sheet (Date, Currency Code, Amount)</li>
-            <li>Click <strong>Currency Converter → Fetch Exchange Rates</strong> in the menu bar</li>
+            <li>Click <strong>Currency Converter → Setup Sheet</strong> to create headers automatically</li>
+            <li>Enter your data starting from row 2 (Date, Currency Code, Amount)</li>
+            <li>Click <strong>Currency Converter → Fetch Exchange Rates</strong></li>
             <li>Authorize the script when prompted (first time only)</li>
             <li>Exchange rates will be fetched and EUR amounts calculated automatically!</li>
           </ol>
