@@ -1,124 +1,51 @@
-import * as XLSX from 'xlsx';
 import { Button } from '@/components/ui/button';
-import { Download, FileSpreadsheet, Copy, Check } from 'lucide-react';
+import { Copy, Check, FileSpreadsheet, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const VBA_CODE = `Sub FetchExchangeRates()
-    Dim ws As Worksheet
-    Dim lastRow As Long
-    Dim i As Long
-    Dim url As String
-    Dim http As Object
-    Dim json As String
-    Dim rate As Double
-    Dim dateStr As String
-    Dim currency As String
+const APPS_SCRIPT_CODE = `function fetchExchangeRates() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Data');
+  const lastRow = sheet.getLastRow();
+  
+  for (let i = 2; i <= lastRow; i++) {
+    const date = sheet.getRange(i, 1).getValue();
+    const currency = sheet.getRange(i, 2).getValue();
     
-    Set ws = ThisWorkbook.Sheets("Data")
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Set http = CreateObject("MSXML2.XMLHTTP")
-    
-    For i = 2 To lastRow
-        dateStr = Format(ws.Cells(i, 1).Value, "yyyy-mm-dd")
-        currency = ws.Cells(i, 2).Value
+    if (date && currency && currency !== 'EUR') {
+      const dateStr = Utilities.formatDate(new Date(date), 'GMT', 'yyyy-MM-dd');
+      const url = 'https://api.frankfurter.app/' + dateStr + '?from=' + currency + '&to=EUR';
+      
+      try {
+        const response = UrlFetchApp.fetch(url);
+        const json = JSON.parse(response.getContentText());
+        const rate = json.rates.EUR;
         
-        If dateStr <> "" And currency <> "" And currency <> "EUR" Then
-            url = "https://api.frankfurter.app/" & dateStr & "?from=" & currency & "&to=EUR"
-            
-            On Error Resume Next
-            http.Open "GET", url, False
-            http.Send
-            
-            If http.Status = 200 Then
-                json = http.responseText
-                ' Extract rate from JSON response
-                rate = ExtractRate(json)
-                If rate > 0 Then
-                    ws.Cells(i, 4).Value = rate
-                End If
-            End If
-            On Error GoTo 0
-        End If
-    Next i
-    
-    MsgBox "Exchange rates updated!", vbInformation
-End Sub
+        if (rate) {
+          sheet.getRange(i, 4).setValue(rate);
+        }
+      } catch (e) {
+        Logger.log('Error fetching rate for row ' + i + ': ' + e);
+      }
+    }
+  }
+  
+  SpreadsheetApp.getUi().alert('Exchange rates updated!');
+}
 
-Function ExtractRate(json As String) As Double
-    Dim pos1 As Long, pos2 As Long
-    Dim rateStr As String
-    
-    pos1 = InStr(json, """EUR"":")
-    If pos1 > 0 Then
-        pos1 = pos1 + 6
-        pos2 = InStr(pos1, json, "}")
-        rateStr = Mid(json, pos1, pos2 - pos1)
-        ExtractRate = CDbl(rateStr)
-    Else
-        ExtractRate = 0
-    End If
-End Function`;
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('Currency Converter')
+    .addItem('Fetch Exchange Rates', 'fetchExchangeRates')
+    .addToUi();
+}`;
 
 const Index = () => {
   const [copied, setCopied] = useState(false);
 
-  const generateExcelTemplate = () => {
-    const workbook = XLSX.utils.book_new();
-
-    // Main data sheet
-    const mainData = [
-      ['Date', 'Currency Code', 'Amount', 'Exchange Rate (EUR)', 'Converted EUR'],
-      ['2024-01-15', 'CAD', 100, '', '=IF(D2="","",C2*D2)'],
-      ['2024-01-16', 'USD', 250, '', '=IF(D3="","",C3*D3)'],
-      ['2024-01-17', 'GBP', 500, '', '=IF(D4="","",C4*D4)'],
-      ['', '', '', '', ''],
-      ['', '', '', 'Total EUR:', '=SUM(E2:E4)'],
-    ];
-    const mainSheet = XLSX.utils.aoa_to_sheet(mainData);
-    mainSheet['!cols'] = [
-      { wch: 12 },
-      { wch: 15 },
-      { wch: 12 },
-      { wch: 20 },
-      { wch: 15 },
-    ];
-
-    // Instructions sheet
-    const instructionsData = [
-      ['Currency to EUR Converter with VBA Macro'],
-      [''],
-      ['SETUP (one-time):'],
-      ['1. Save this file as .xlsm (Macro-Enabled Workbook)'],
-      ['2. Press Alt+F11 to open the VBA Editor'],
-      ['3. Insert > Module'],
-      ['4. Paste the VBA code from the download page'],
-      ['5. Close the VBA Editor'],
-      [''],
-      ['USAGE:'],
-      ['1. Enter your data in the "Data" sheet (Date, Currency, Amount)'],
-      ['2. Press Alt+F8, select "FetchExchangeRates", click Run'],
-      ['3. The macro will fetch rates from the Frankfurter API'],
-      ['4. Column E calculates the EUR amount automatically'],
-      [''],
-      ['SUPPORTED CURRENCIES:'],
-      ['USD, CAD, GBP, JPY, CHF, AUD, NZD, SEK, NOK, DKK, and more'],
-    ];
-    const instructionsSheet = XLSX.utils.aoa_to_sheet(instructionsData);
-    instructionsSheet['!cols'] = [{ wch: 60 }];
-
-    XLSX.utils.book_append_sheet(workbook, instructionsSheet, 'Instructions');
-    XLSX.utils.book_append_sheet(workbook, mainSheet, 'Data');
-
-    XLSX.writeFile(workbook, 'currency_converter_template.xlsx');
-    toast.success('Template downloaded! Follow the setup instructions.');
-  };
-
-  const copyVBACode = async () => {
-    await navigator.clipboard.writeText(VBA_CODE);
+  const copyAppsScriptCode = async () => {
+    await navigator.clipboard.writeText(APPS_SCRIPT_CODE);
     setCopied(true);
-    toast.success('VBA code copied to clipboard!');
+    toast.success('Apps Script code copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -131,41 +58,59 @@ const Index = () => {
             Currency to EUR Converter
           </h1>
           <p className="text-muted-foreground">
-            Excel template with VBA macro that fetches exchange rates from the Frankfurter API
+            Google Sheets template with Apps Script that fetches exchange rates from the Frankfurter API
           </p>
         </div>
 
-        <div className="flex justify-center">
-          <Button onClick={generateExcelTemplate} size="lg" className="gap-2">
-            <Download className="w-5 h-5" />
-            Download Excel Template
-          </Button>
+        <div className="rounded-xl border border-border bg-muted/50 p-6 space-y-3">
+          <h3 className="font-semibold text-foreground">Step 1: Create Your Google Sheet</h3>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+            <li>Go to <a href="https://sheets.google.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Sheets</a> and create a new spreadsheet</li>
+            <li>Rename the first sheet tab to <strong>"Data"</strong></li>
+            <li>Add these headers in row 1:</li>
+          </ol>
+          <div className="bg-muted p-3 rounded-lg text-sm font-mono mt-2">
+            A1: Date | B1: Currency Code | C1: Amount | D1: Exchange Rate (EUR) | E1: Converted EUR
+          </div>
+          <p className="text-sm text-muted-foreground mt-2">
+            In cell E2, enter this formula and drag down: <code className="bg-muted px-2 py-1 rounded">=IF(D2="","",C2*D2)</code>
+          </p>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">VBA Macro Code</h2>
-            <Button variant="outline" size="sm" onClick={copyVBACode} className="gap-2">
+            <h3 className="font-semibold text-foreground">Step 2: Add the Apps Script</h3>
+            <Button variant="outline" size="sm" onClick={copyAppsScriptCode} className="gap-2">
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Copy Code'}
             </Button>
           </div>
-          <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs text-foreground font-mono">
-            {VBA_CODE}
+          <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs text-foreground font-mono max-h-64 overflow-y-auto">
+            {APPS_SCRIPT_CODE}
           </pre>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+            <li>In your Google Sheet, go to <strong>Extensions → Apps Script</strong></li>
+            <li>Delete any existing code and paste the code above</li>
+            <li>Click <strong>Save</strong> (Ctrl+S)</li>
+            <li>Close the Apps Script tab and refresh your Google Sheet</li>
+          </ol>
         </div>
 
         <div className="rounded-xl border border-border bg-muted/50 p-6 space-y-3">
-          <h3 className="font-semibold text-foreground">Setup Instructions</h3>
+          <h3 className="font-semibold text-foreground">Step 3: Use the Converter</h3>
           <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-            <li>Download and open the Excel template</li>
-            <li>Save as <strong>.xlsm</strong> (Excel Macro-Enabled Workbook)</li>
-            <li>Press <strong>Alt+F11</strong> to open VBA Editor</li>
-            <li>Go to <strong>Insert → Module</strong></li>
-            <li>Paste the VBA code above and close the editor</li>
-            <li>Enter your data (Date, Currency, Amount) in the Data sheet</li>
-            <li>Press <strong>Alt+F8</strong>, select <strong>FetchExchangeRates</strong>, click Run</li>
+            <li>Enter your data in the Data sheet (Date, Currency Code, Amount)</li>
+            <li>Click <strong>Currency Converter → Fetch Exchange Rates</strong> in the menu bar</li>
+            <li>Authorize the script when prompted (first time only)</li>
+            <li>Exchange rates will be fetched and EUR amounts calculated automatically!</li>
           </ol>
+        </div>
+
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 space-y-3">
+          <h3 className="font-semibold text-foreground">Supported Currencies</h3>
+          <p className="text-sm text-muted-foreground">
+            USD, CAD, GBP, JPY, CHF, AUD, NZD, SEK, NOK, DKK, PLN, CZK, HUF, and more from the Frankfurter API.
+          </p>
         </div>
       </div>
     </div>
