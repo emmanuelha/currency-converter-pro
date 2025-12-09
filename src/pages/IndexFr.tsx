@@ -82,7 +82,17 @@ const IndexFr = () => {
             Convertisseur de Devises vers EUR
           </h1>
           <p className="text-muted-foreground">
-            Modèle Google Sheets avec Apps Script qui récupère les taux de change de l'API Frankfurter
+            Pourquoi ce convertisseur ?
+            Savez vous comment votre courtier gère les conversions de devises pour chaque transactions ?
+            Avez vous des comptes qui ne sont pas en devises de base EUR ?
+            Si vous avez plusieurs comptes en devises différentes, ce modèle vous aidera à convertir facilement les montants en EUR en utilisant les taux de change historiques.
+            Pourquoi auriez vous des comptes qui ne sont pas en devises de base EUR vous me direz ?
+            Très simple : chez certain courtiers quand vous possedez du cash en plusieurs monnaies et que vous vendez des actions en dollar par exemple, le courtier va effectuer un ensemble de conversions dans différentes monnaies et pas seulement faire une vente en dollar. Vous ne maitriserez en aucun cas ces conversions de monnaies.
+            Pour palier à cela il est judicieux d'avoir des comptes en différentes devises.
+            Par contre le revers de la médaille est que vous devez gérer les conversions de devises vous même pour savoir combien vous avez réellement en EUR. 
+            Ce convertisseur est un simple, il utilise Google Sheet car nous avons quasiment tous un compte Google.
+            Par contre nous n'avons pas tous Excel (qui est payant) et certains sont sur mac ou Linux. 
+            Ce convertisseur utilise un modèle Google Sheets avec Apps Script qui récupère les taux de change de l'API Frankfurter.
           </p>
         </div>
 

@@ -81,9 +81,20 @@ const Index = () => {
           <h1 className="text-3xl font-bold text-foreground">
             Currency to EUR Converter
           </h1>
-          <p className="text-muted-foreground">
-            Google Sheets template with Apps Script that fetches exchange rates from the Frankfurter API
-          </p>
+            <p className="text-muted-foreground">
+            Why this converter?
+            Do you know how your broker handles currency conversions for each transaction?
+            Do you have accounts that are not in your base currency EUR?
+            If you have multiple accounts in different currencies, this template will help you easily convert amounts to EUR using historical exchange rates.
+            Why would you have accounts not in your base currency EUR, you might ask?
+            Simple: at certain brokers, when you hold cash in multiple currencies and you sell stocks in dollars for example, the broker will perform a series of conversions across different currencies and not just a dollar sale. You have no control over these currency conversions.
+            To avoid this, it's wise to have accounts in different currencies.
+            However, the downside is that you must manage currency conversions yourself to know how much you really have in EUR.
+            This converter is simple; it uses Google Sheets because almost all of us have a Google account.
+            However, not all of us have Excel (which is paid) and some are on Mac or Linux.
+            This converter uses a Google Sheets template with Apps Script that fetches exchange rates from the Frankfurter API.
+            If you would like to see support for other target currencies than EUR, please let me know!
+            </p>
         </div>
 
         <div className="rounded-xl border border-border bg-muted/50 p-6 space-y-3">
