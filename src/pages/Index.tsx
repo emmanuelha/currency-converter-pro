@@ -76,12 +76,12 @@ const Index = () => {
           </Link>
         </div>
 
-        <div className="text-center space-y-4">
+        <div className="text-left space-y-4">
           <FileSpreadsheet className="w-16 h-16 mx-auto text-primary" />
           <h1 className="text-3xl font-bold text-foreground">
             Currency to EUR Converter
           </h1>
-            <p className="rounded-xl border border-border bg-card p-6 space-y-4 text-align: left;">
+            <p className="rounded-xl border border-border bg-card p-6 space-y-4;">
             Why this converter?
 
             <br /><b>Do you know how your broker handles currency conversions for each transaction?</b>

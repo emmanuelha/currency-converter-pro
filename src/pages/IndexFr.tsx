@@ -76,7 +76,7 @@ const IndexFr = () => {
           </Link>
         </div>
 
-        <div className="text-center space-y-4">
+        <div className="text-left space-y-4">
           <FileSpreadsheet className="w-16 h-16 mx-auto text-primary" />
           <h1 className="text-3xl font-bold text-foreground">
             Convertisseur de Devises vers EUR
