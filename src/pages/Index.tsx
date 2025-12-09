@@ -83,15 +83,16 @@ const Index = () => {
           </h1>
             <p className="text-muted-foreground">
             Why this converter?
-            <br />Do you know how your broker handles currency conversions for each transaction?
-            <br />Do you have accounts that are not in your base currency EUR?
-            <br />If you have multiple accounts in different currencies, this template will help you easily convert amounts to EUR using historical exchange rates.
-            <br />Why would you have accounts not in your base currency EUR, you might ask?
+            <br /><b>Do you know how your broker handles currency conversions for each transaction?</b>
+            <br /><b>Do you have accounts that are not in your base currency EUR?</b>
+
+            <br /><br />If you have multiple accounts in different currencies, this template will help you easily convert amounts to EUR using historical exchange rates.
+            <br /><br />Why would you have accounts not in your base currency EUR, you might ask?
             <br />Simple: at certain brokers, when you hold cash in multiple currencies and you sell stocks in dollars for example, the broker will perform a series of conversions across different currencies and not just a dollar sale. You have no control over these currency conversions.
             <br />To avoid this, it's wise to have accounts in different currencies.
             <br />However, the downside is that you must manage currency conversions yourself to know how much you really have in EUR.
             <br />This converter is simple; it uses Google Sheets because almost all of us have a Google account.
-            <br />However, not all of us have Excel (which is paid) and some are on Mac or Linux.
+            <br />But not all of us have Excel (which has a cost) and some are on Mac or Linux.
             <br />This converter uses a Google Sheets template with Apps Script that fetches exchange rates from the Frankfurter API.
             <br />If you would like to see support for other target currencies than EUR, please let me know!
             </p>

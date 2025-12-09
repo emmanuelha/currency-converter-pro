@@ -83,10 +83,11 @@ const IndexFr = () => {
           </h1>
           <p className="text-muted-foreground">
             Pourquoi ce convertisseur ?
-            <br />Savez vous comment votre courtier gère les conversions de devises pour chaque transactions ?
-            <br />Avez vous des comptes qui ne sont pas en devises de base EUR ?
-            <br />Si vous avez plusieurs comptes en devises différentes, ce modèle vous aidera à convertir facilement les montants en EUR en utilisant les taux de change historiques.
-            <br />Pourquoi auriez vous des comptes qui ne sont pas en devises de base EUR vous me direz ?
+            <br /><b>Savez vous comment votre courtier gère les conversions de devises pour chaque transactions ?</b>
+            <br /><b>Avez vous des comptes qui ne sont pas en devises de base EUR ?</b>
+            
+            <br /><br />Si vous avez plusieurs comptes en devises différentes, ce modèle vous aidera à convertir facilement les montants en EUR en utilisant les taux de change historiques.
+            <br /><br />Pourquoi auriez vous des comptes qui ne sont pas en devises de base EUR vous me direz ?
             <br />Très simple : chez certain courtiers quand vous possedez du cash en plusieurs monnaies et que vous vendez des actions en dollar par exemple, le courtier va effectuer un ensemble de conversions dans différentes monnaies et pas seulement faire une vente en dollar. Vous ne maitriserez en aucun cas ces conversions de monnaies.
             <br />Pour palier à cela il est judicieux d'avoir des comptes en différentes devises.
             <br />Par contre le revers de la médaille est que vous devez gérer les conversions de devises vous même pour savoir combien vous avez réellement en EUR. 
